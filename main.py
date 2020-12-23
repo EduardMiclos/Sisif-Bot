@@ -15,7 +15,7 @@ import xlrd
 # ------------- SELECTARE PREFIX COMENZI SI TOKEN -------------
 
 client = commands.Bot(command_prefix='.')
-BOT_TOKEN = 'NzkxMTAwNDUxNzc1OTcxMzc5.X-KPtQ.oj5k7DZawItaX_pEtUSmAzwhQf0'
+BOT_TOKEN = '#######################'
 
 # -------------------------------------------------------------
 
