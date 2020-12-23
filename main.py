@@ -12,12 +12,17 @@ import xlrd
 
 
 
+
+
+
 # ------------- SELECTARE PREFIX COMENZI SI TOKEN -------------
 
 client = commands.Bot(command_prefix='.')
 BOT_TOKEN = '#######################'
 
 # -------------------------------------------------------------
+
+
 
 
 
@@ -29,7 +34,6 @@ class Links:
     drives = {}
     cursuri = {}
 
-# ------------------------------------------
 
 Links.drives["info"] ='Drive-ul nostru: https://drive.google.com/drive/folders/1MjE9FocU4ZZor5TITJD7grgZILZH_FN-?usp=sharing'
 Links.drives["ipc"] = 'Drive IPC: https://docs.google.com/spreadsheets/d/1ndI8qUHxgtKdZFs6CT2IRVecYZGuVMOLr5JUzYktVWc/edit#gid=0'
@@ -37,6 +41,9 @@ Links.drives["fc"] ='Drive FC: https://drive.google.com/drive/folders/1p7wi23muo
 
 Links.cursuri["ipc"] = 'https://upt-ro.zoom.us/j/95060505628'
 Links.cursuri["fc"] = 'https://zoom.us/j/4646489463?pwd=TFVYd2dGWnMwWFhBckN3TENPOEJsQT09'
+
+# ------------------------------------------
+
 
 
 
@@ -58,6 +65,8 @@ async def on_member_join(member):
 
 
 
+
+
 # ------------- ERROR HANDLING -------------
 
 @client.event
@@ -68,6 +77,8 @@ async def on_command_error(ctx, error):
         await ctx.send("Nu înțeleg, maiestre.")
 
 # ------------------------------------------
+
+
 
 
 
@@ -99,6 +110,7 @@ async def info(ctx, *, member: discord.Member):
 
 
 
+
 # ------------- CONECTARE LA EXCEL -------------
 
 path = 'info.xls'
@@ -108,6 +120,10 @@ rows = inputWorksheet.nrows
 cols = inputWorksheet.ncols
 
 # -----------------------------------------------
+
+
+
+
 
 
 
@@ -125,6 +141,10 @@ with open('Teste.txt', 'r', encoding='utf-8') as f:
         incoming_text = 'Nu sunt examene, teste sau parțiale în următoarele săptămâni...'
 
 # ---------------------------------------------
+
+
+
+
 
 
 
@@ -187,6 +207,9 @@ def my_lord(ctx):
 
 
 
+
+
+
 # ------------- RASPUNSURI -------------
 
 
@@ -235,6 +258,10 @@ async def stapan(ctx):
     await ctx.send('Tu ești stăpânul meu!')
 
 # --------------------------------------
+
+
+
+
 
 
 
