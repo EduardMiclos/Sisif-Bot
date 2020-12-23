@@ -18,7 +18,7 @@ import xlrd
 # ------------- SELECTARE PREFIX COMENZI SI TOKEN -------------
 
 client = commands.Bot(command_prefix='.')
-BOT_TOKEN = '#######################'
+BOT_TOKEN = '#########################'
 
 # -------------------------------------------------------------
 
@@ -30,19 +30,21 @@ BOT_TOKEN = '#######################'
 # ------------- LINK-URI UTILE -------------
 
 class Links:
-    fb_link = 'https://www.facebook.com/groups/323385562186944/about'
+    fb_link = '#########################'
     drives = {}
     cursuri = {}
 
 
-Links.drives["info"] ='Drive-ul nostru: https://drive.google.com/drive/folders/1MjE9FocU4ZZor5TITJD7grgZILZH_FN-?usp=sharing'
-Links.drives["ipc"] = 'Drive IPC: https://docs.google.com/spreadsheets/d/1ndI8qUHxgtKdZFs6CT2IRVecYZGuVMOLr5JUzYktVWc/edit#gid=0'
-Links.drives["fc"] ='Drive FC: https://drive.google.com/drive/folders/1p7wi23muoQevyHvvP7tg0FmC4G0bCI7d'
+Links.drives["info"] ='Drive-ul nostru: #########################'
+Links.drives["ipc"] = 'Drive IPC: #########################'
+Links.drives["fc"] ='Drive FC: #########################'
 
-Links.cursuri["ipc"] = 'https://upt-ro.zoom.us/j/95060505628'
-Links.cursuri["fc"] = 'https://zoom.us/j/4646489463?pwd=TFVYd2dGWnMwWFhBckN3TENPOEJsQT09'
+Links.cursuri["ipc"] = '#########################'
+Links.cursuri["fc"] = '#########################'
 
 # ------------------------------------------
+
+
 
 
 
@@ -65,8 +67,6 @@ async def on_member_join(member):
 
 
 
-
-
 # ------------- ERROR HANDLING -------------
 
 @client.event
@@ -77,7 +77,6 @@ async def on_command_error(ctx, error):
         await ctx.send("Nu înțeleg, maiestre.")
 
 # ------------------------------------------
-
 
 
 
@@ -126,7 +125,6 @@ cols = inputWorksheet.ncols
 
 
 
-
 # ------------- MANIPULARE FISIERE -------------
 
 incoming_text = ''
@@ -147,9 +145,7 @@ with open('Teste.txt', 'r', encoding='utf-8') as f:
 
 
 
-
 # ------------- FUNCTII AUXILIARE -------------
-
 
 def diacritica(litera):
     return (litera.upper() == 'Ă' or litera.upper() == 'Â' or litera.upper() == 'Î' or litera.upper() == 'Ș' or litera.upper() == 'Ț')
@@ -200,7 +196,6 @@ def search(std_name):
 def my_lord(ctx):
     return ctx.author.id == 217299692176801794
 
-
 # ------------------------------------
 
 
@@ -208,10 +203,7 @@ def my_lord(ctx):
 
 
 
-
-
 # ------------- RASPUNSURI -------------
-
 
 @client.command(aliases=['fb'])
 async def facebook(ctx):
@@ -258,7 +250,6 @@ async def stapan(ctx):
     await ctx.send('Tu ești stăpânul meu!')
 
 # --------------------------------------
-
 
 
 
