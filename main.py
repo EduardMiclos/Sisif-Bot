@@ -18,7 +18,7 @@ import xlrd
 # ------------- SELECTARE PREFIX COMENZI SI TOKEN -------------
 
 client = commands.Bot(command_prefix='.')
-BOT_TOKEN = '#########################'
+BOT_TOKEN = '##############'
 
 # -------------------------------------------------------------
 
@@ -30,19 +30,30 @@ BOT_TOKEN = '#########################'
 # ------------- LINK-URI UTILE -------------
 
 class Links:
-    fb_link = '#########################'
+    fb_link = '##############'
     drives = {}
     cursuri = {}
 
+Links.drives["info"] ='Drive-ul nostru: ##############'
+Links.drives["ipc"] = 'Drive IPC: ##############'
+Links.drives["fc"] ='Drive FC: ##############'
 
-Links.drives["info"] ='Drive-ul nostru: #########################'
-Links.drives["ipc"] = 'Drive IPC: #########################'
-Links.drives["fc"] ='Drive FC: #########################'
-
-Links.cursuri["ipc"] = '#########################'
-Links.cursuri["fc"] = '#########################'
+Links.cursuri["ipc"] = '##############'
+Links.cursuri["fc"] = '##############'
 
 # ------------------------------------------
+
+
+
+
+
+
+# ------------- CINE POATE FOLOSI BOT-UL -------------
+
+ROLES = ['Andrei', 'Sefu La Grupa', 'Certified Meme Expert', 'Grupa 1', 'Grupa 2', 'Grupa 3', 'Duamna Profesoară', 'DJ', 'Vik']
+SPECIAL_ROLES = ['Andrei', 'Sefu La Grupa']
+
+# ----------------------------------------------------
 
 
 
@@ -75,6 +86,8 @@ async def on_command_error(ctx, error):
         await ctx.send("Te rog sa introduci toate argumentele comenzii.")
     elif isinstance(error, commands.CommandNotFound):
         await ctx.send("Nu înțeleg, maiestre.")
+    elif isinstance(error, commands.MissingAnyRole):
+        await ctx.send("Îmi pare rău, nu ascult de tine.")
 
 # ------------------------------------------
 
@@ -83,13 +96,15 @@ async def on_command_error(ctx, error):
 
 
 
-# ------------- TEHNICE -------------
+# ------------- TEHNICE ȘI ADMINISTRATIVE -------------
 
 @client.command()
+@commands.has_any_role(*SPECIAL_ROLES)
 async def ping(ctx):
         await ctx.send(f'Ping = {round(client.latency * 1000)} ms')
 
 @client.command()
+@commands.has_any_role(*SPECIAL_ROLES)
 async def info(ctx, *, member: discord.Member):
     crated_at = member.joined_at.strftime("%d.%m.%Y")
     roles = len(member.roles)
@@ -102,6 +117,31 @@ async def info(ctx, *, member: discord.Member):
         txt+= f'are {roles} roluri.'
 
     await ctx.send(txt)
+
+@client.command()
+@commands.has_any_role(*SPECIAL_ROLES)
+async def kick(ctx, member: discord.Member, *, motiv=''):
+    await member.kick(reason = motiv)
+    await ctx.send(f'La voia maiestrului, {member} a primit kick.')
+
+@client.command()
+@commands.has_any_role(*SPECIAL_ROLES)
+async def ban(ctx, member: discord.Member, *, motiv=''):
+    await member.ban(reason = motiv)
+    await ctx.send(f'La voia maiestrului, {member} a primit ban.')
+
+@client.command()
+@commands.has_any_role(*SPECIAL_ROLES)
+async def unban(ctx, *, member):
+    banned_users = await ctx.guild.bans()
+    member_name, member_disc = member.split('#')
+
+    for entry in banned_users:
+        user = entry.user
+
+        if (user.name, user.discriminator) == (member_name, member_disc):
+            await ctx.guild.unban(user)
+            await ctx.send(f'La voia maiestrului, {user.name}#{user.discriminator} a primit unban. ')
 
 # -----------------------------------
 
@@ -194,7 +234,7 @@ def search(std_name):
 
 
 def my_lord(ctx):
-    return ctx.author.id == 217299692176801794
+    return ctx.author.id == ##############
 
 # ------------------------------------
 
@@ -202,33 +242,37 @@ def my_lord(ctx):
 
 
 
-
-# ------------- RASPUNSURI -------------
+# ------------- RASPUNSURI UZUALE-------------
 
 @client.command(aliases=['fb'])
+@commands.has_any_role(*ROLES)
 async def facebook(ctx):
     await ctx.send(f'Link-ul grupului de facebook este: {Links.fb_link}')
 
 
 
 @client.command()
+@commands.has_any_role(*ROLES)
 async def drives(ctx, drive):
     if drive.upper() == 'INFO' or drive.upper() == 'IPC' or drive.upper() == 'FC':
         await ctx.send(Links.drives[drive])
 
 
 @client.command()
+@commands.has_any_role(*ROLES)
 async def student(ctx, *, name):
     txt = search(name.upper())
     await ctx.send(txt)
 
 
 @client.command(aliases=['teste', 'examene'])
+@commands.has_any_role(*ROLES)
 async def incoming(ctx):
     await ctx.send(incoming_text)
 
 
 @client.command()
+@commands.has_any_role(*ROLES)
 async def lider(ctx, *, indice_grupa:int):
     if int(indice_grupa) == 1:
         await ctx.send('Liderul grupei 1 este Berechet Lucian-Ion.')
@@ -237,8 +281,14 @@ async def lider(ctx, *, indice_grupa:int):
     elif int(indice_grupa) == 3:
         await ctx.send('Liderul grupei 3 este Preda Octavian.')
 
+@client.command()
+@commands.has_any_role(*ROLES)
+async def sef(ctx):
+    await ctx.send("Șeful de an este Balea Andrei-Petru. Dar stăpânul meu rămâne Micloș.")
+
 
 @client.command()
+@commands.has_any_role(*ROLES)
 async def link(ctx, *, materie):
     if materie == 'ipc' or materie == 'fc':
         await ctx.send(f'Link: {Links.cursuri[materie]}')
