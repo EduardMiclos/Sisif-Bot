@@ -31,8 +31,8 @@ Each command is prefixed with a dot.
 
 
     SPECIAL:
-   .banc / .antistres - pseudorandomly shows an anecdote in Romanian language. 
-   .joke - pseudorandomly shows an anecdote in English Language, taken from the Subreddit r/jokes. 
-   .meme - pseudorandomly shows a meme, taken from ones of the two Subreddits: r/memes and r/dankmemes. 
-   .noutati / .stiri / .news - pseudorandomly shows some of the last news posted on the subreddit r/Romania. 
-   .poke member_name message_to_send - sends the message 'message_to_send' on the channel, preceded by the reference @member_name. 
+     .banc / .antistres - pseudorandomly shows an anecdote in Romanian language. 
+     .joke - pseudorandomly shows an anecdote in English Language, taken from the Subreddit r/jokes. 
+     .meme - pseudorandomly shows a meme, taken from ones of the two Subreddits: r/memes and r/dankmemes. 
+     .noutati / .stiri / .news - pseudorandomly shows some of the last news posted on the subreddit r/Romania. 
+     .poke member_name message_to_send - sends the message 'message_to_send' on the channel, preceded by the reference @member_name. 
