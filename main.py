@@ -6,7 +6,9 @@
 
 import discord
 from discord.ext import commands
-import xlrd
+import codecs
+import random
+from reddit_extractor import MEMES, JOKES, NEWS
 
 # -----------------------------------
 
@@ -15,10 +17,11 @@ import xlrd
 
 
 
-# ------------- SELECTARE PREFIX COMENZI SI TOKEN -------------
+# ------------- HANDLING TOKEN-------------
 
 client = commands.Bot(command_prefix='.')
 BOT_TOKEN = '##############'
+REPORTS_CHANNEL = ##############
 
 # -------------------------------------------------------------
 
@@ -27,7 +30,7 @@ BOT_TOKEN = '##############'
 
 
 
-# ------------- LINK-URI UTILE -------------
+# ------------- USEFUL LINKS -------------
 
 class Links:
     fb_link = '##############'
@@ -48,7 +51,7 @@ Links.cursuri["fc"] = '##############'
 
 
 
-# ------------- CINE POATE FOLOSI BOT-UL -------------
+# ------------- WHO CAN USE THE BOT-------------
 
 ROLES = ['Andrei', 'Sefu La Grupa', 'Certified Meme Expert', 'Grupa 1', 'Grupa 2', 'Grupa 3', 'Duamna Profesoară', 'DJ', 'Vik']
 SPECIAL_ROLES = ['Andrei', 'Sefu La Grupa']
@@ -85,9 +88,11 @@ async def on_command_error(ctx, error):
     if isinstance(error, commands.MissingRequiredArgument):
         await ctx.send("Te rog sa introduci toate argumentele comenzii.")
     elif isinstance(error, commands.CommandNotFound):
-        await ctx.send("Nu înțeleg, maiestre.")
+        await ctx.send("Nu înțeleg, maestre.")
     elif isinstance(error, commands.MissingAnyRole):
         await ctx.send("Îmi pare rău, nu ascult de tine.")
+    elif isinstance(error, commands.NotOwner):
+        await ctx.send("Nu ești stăpânul meu, Micloș este.")
 
 # ------------------------------------------
 
@@ -96,7 +101,7 @@ async def on_command_error(ctx, error):
 
 
 
-# ------------- TEHNICE ȘI ADMINISTRATIVE -------------
+# ------------- TECHNIC AND ADMINISTRATIVE -------------
 
 @client.command()
 @commands.has_any_role(*SPECIAL_ROLES)
@@ -107,28 +112,37 @@ async def ping(ctx):
 @commands.has_any_role(*SPECIAL_ROLES)
 async def info(ctx, *, member: discord.Member):
     crated_at = member.joined_at.strftime("%d.%m.%Y")
-    roles = len(member.roles)
+    roles = len(member.roles) - 1
     txt = f'{member} s-a alaturat server-ului in data de {crated_at} și ';
     if roles == 0:
-        txt+= 'nu are roluri.'
+        txt+= 'nu are roluri special.'
     elif roles == 1:
-        txt+= 'are un rol.'
+        txt+= 'are un rol special.'
     else:
-        txt+= f'are {roles} roluri.'
+        txt+= f'are {roles} roluri speciale.'
 
     await ctx.send(txt)
+
+@client.command()
+@commands.has_any_role(*ROLES)
+async def report(ctx, reported_member: discord.Member, *, msg=''):
+    channel = client.get_channel(REPORTS_CHANNEL)
+    (reason, evidence) = msg.split('~')
+    text = 'Username: **' + str(reported_member) + '\n**Motiv: *' + reason + '*\nDovezi: *' + evidence + '*\n'
+    await channel.send(text)
+    await ctx.send(f'Membrul **{reported_member}** a fost raportat. Motiv: *{reason}*\nUn admin va analiza situația.')
 
 @client.command()
 @commands.has_any_role(*SPECIAL_ROLES)
 async def kick(ctx, member: discord.Member, *, motiv=''):
     await member.kick(reason = motiv)
-    await ctx.send(f'La voia maiestrului, {member} a primit kick.')
+    await ctx.send(f'La voia maestrului, {member} a primit kick.')
 
 @client.command()
 @commands.has_any_role(*SPECIAL_ROLES)
 async def ban(ctx, member: discord.Member, *, motiv=''):
     await member.ban(reason = motiv)
-    await ctx.send(f'La voia maiestrului, {member} a primit ban.')
+    await ctx.send(f'La voia maestrului, {member} a primit ban.')
 
 @client.command()
 @commands.has_any_role(*SPECIAL_ROLES)
@@ -141,7 +155,7 @@ async def unban(ctx, *, member):
 
         if (user.name, user.discriminator) == (member_name, member_disc):
             await ctx.guild.unban(user)
-            await ctx.send(f'La voia maiestrului, {user.name}#{user.discriminator} a primit unban. ')
+            await ctx.send(f'La voia maestrului, {user.name}#{user.discriminator} a primit unban. ')
 
 # -----------------------------------
 
@@ -150,33 +164,24 @@ async def unban(ctx, *, member):
 
 
 
-# ------------- CONECTARE LA EXCEL -------------
-
-path = 'info.xls'
-inputWorkboot = xlrd.open_workbook(path)
-inputWorksheet = inputWorkboot.sheet_by_index(0)
-rows = inputWorksheet.nrows
-cols = inputWorksheet.ncols
-
-# -----------------------------------------------
-
-
-
-
-
-
-# ------------- MANIPULARE FISIERE -------------
+# ------------- FILES MANIPULATION -------------
 
 incoming_text = ''
+BANCURI = []
 
-with open('Teste.txt', 'r', encoding='utf-8') as f:
-    f.seek(0)
-    read = f.read(1)
+with open('Teste.txt', 'r', encoding='utf-8') as file:
+    file.seek(0)
+    read = file.read(1)
 
     if read:
-        incoming_text = read + f.read()
+        incoming_text = read + file.read()
     else:
         incoming_text = 'Nu sunt examene, teste sau parțiale în următoarele săptămâni...'
+
+
+with codecs.open('Bancuri.txt', 'r', 'utf-8') as file:
+    BANCURI = file.read().split('---')
+    file.close()
 
 # ---------------------------------------------
 
@@ -185,56 +190,31 @@ with open('Teste.txt', 'r', encoding='utf-8') as f:
 
 
 
-# ------------- FUNCTII AUXILIARE -------------
+# -------------SECONDARY FUNCTIONS -------------
 
-def diacritica(litera):
-    return (litera.upper() == 'Ă' or litera.upper() == 'Â' or litera.upper() == 'Î' or litera.upper() == 'Ș' or litera.upper() == 'Ț')
+def binary_search(name):
 
+    with open('studenti_INFO.txt', 'r+', encoding='utf-8') as f:
+        lines = f.readlines()
 
-def diacritice(nume):
-    sum = 0
+        left = 0
+        right = len(lines) - 1
 
-    for litera in nume:
-        if diacritica(litera):
-            sum = sum+1
+        while left <= right:
+            mid = int((left+right)/2)
+            line_split = lines[mid].split('1A')
+            first_name__second_name = line_split[0]
+            group = line_split[1]
 
-    return sum
+            if name in first_name__second_name:
+                return first_name__second_name + ' - grupa: 1A' + group
+            elif name > first_name__second_name:
+                left = mid + 1
+            else:
+                right = mid - 1
 
-
-
-def replace(initial, nume):
-
-    lst_initial = list(initial)
-    lst_nume = list(nume)
-
-    for i in range(0, len(nume)):
-        if lst_initial[i] == '?':
-            lst_initial[i] = lst_nume[i]
-
-    return ''.join(lst_initial)
-
-
-def search(std_name):
-
-    for r in range(rows):
-        search_name = inputWorksheet.row(r)[1]
-        search_group = inputWorksheet.row(r)[2]
-
-        if '?' in search_name.value and diacritice(std_name):
-            search_name.value = replace(search_name.value, std_name)
-
-        if std_name in search_name.value:
-            reply = "Am găsit.\n " + search_name.value + ' - grupa: ' + search_group.value
-            return reply
-        else:
-            reply = "Nu am găsit, stăpâne. Îmi pare rău."
-
-    return reply
-
-
-
-def my_lord(ctx):
-    return ctx.author.id == ##############
+    f.close()
+    return 'Nu am găsit, maiestre'
 
 # ------------------------------------
 
@@ -242,13 +222,13 @@ def my_lord(ctx):
 
 
 
-# ------------- RASPUNSURI UZUALE-------------
+# ------------- USUAL RESPONSES FROM THE BOT -------------
 
 @client.command(aliases=['fb'])
 @commands.has_any_role(*ROLES)
 async def facebook(ctx):
     await ctx.send(f'Link-ul grupului de facebook este: {Links.fb_link}')
-
+    await ctx.send('Detalii pe canalul `linkuri-utile` ')
 
 
 @client.command()
@@ -256,12 +236,13 @@ async def facebook(ctx):
 async def drives(ctx, drive):
     if drive.upper() == 'INFO' or drive.upper() == 'IPC' or drive.upper() == 'FC':
         await ctx.send(Links.drives[drive])
+        await ctx.send('Detalii pe canalul `linkuri-utile` ')
 
 
 @client.command()
 @commands.has_any_role(*ROLES)
 async def student(ctx, *, name):
-    txt = search(name.upper())
+    txt = binary_search(name.upper())
     await ctx.send(txt)
 
 
@@ -275,7 +256,7 @@ async def incoming(ctx):
 @commands.has_any_role(*ROLES)
 async def lider(ctx, *, indice_grupa:int):
     if int(indice_grupa) == 1:
-        await ctx.send('Liderul grupei 1 este Berechet Lucian-Ion.')
+        await ctx.send('Liderul grupei 1 este Berechet Ion-Lucian.')
     elif int(indice_grupa) == 2:
         await ctx.send('Liderul grupei 2 este Micloș Eduard-Pavel.')
     elif int(indice_grupa) == 3:
@@ -284,7 +265,7 @@ async def lider(ctx, *, indice_grupa:int):
 @client.command()
 @commands.has_any_role(*ROLES)
 async def sef(ctx):
-    await ctx.send("Șeful de an este Balea Andrei-Petru. Dar stăpânul meu rămâne Micloș.")
+    await ctx.send("Șeful de an este Balea Andrei-Petru. Dar stăpânul meu rămâne Micloș. ")
 
 
 @client.command()
@@ -293,9 +274,98 @@ async def link(ctx, *, materie):
     if materie == 'ipc' or materie == 'fc':
         await ctx.send(f'Link: {Links.cursuri[materie]}')
 
+@client.command()
+@commands.has_any_role(*ROLES)
+async def tutoriere(ctx):
+    await ctx.send(f'Link-ul grupului de tutoriere este: {Links.tutoriere}')
+    await ctx.send('Detalii pe canalul `linkuri-utile` ')
+
 
 @client.command()
-@commands.check(my_lord)
+@commands.has_any_role(*ROLES)
+async def poke(user: discord.User, *, message=None):
+    print(user)
+    await user.send(message)
+
+
+LAST_RNDS = []
+@client.command(aliases=['antistres'])
+async def banc(ctx):
+    global LAST_RNDS
+
+    rnd = random.randrange(0, len(BANCURI) - 1, 1)
+
+    # Impiedica repetarea ultimelor bancuri.
+    while rnd in LAST_RNDS:
+        rnd = random.randrange(0, len(BANCURI), 1)
+
+    if len(LAST_RNDS) > len(BANCURI)/2:
+        LAST_RNDS = []
+
+    LAST_RNDS.append(rnd)
+    await ctx.send(BANCURI[rnd])
+
+
+LAST_MEMES = []
+@client.command()
+async def meme(ctx):
+    global LAST_MEMES
+
+    rnd = random.randrange(0, len(MEMES)-1, 1)
+
+    # Impiedica repetarea ultimelor meme-uri.
+    while rnd in LAST_MEMES:
+        rnd = random.randrange(0, len(MEMES), 1)
+
+    if len(LAST_MEMES) > len(MEMES)/2:
+        LAST_MEMES = []
+
+    LAST_MEMES.append(rnd)
+    await ctx.send(MEMES[rnd])
+
+
+LAST_JOKES = []
+@client.command()
+async def joke(ctx):
+    global LAST_JOKES
+
+    rnd = random.randrange(0, len(JOKES) - 1, 1)
+
+    # Impiedica repetarea ultimelor bancuri.
+    while rnd in LAST_JOKES:
+        rnd = random.randrange(0, len(JOKES), 1)
+
+    if len(LAST_JOKES) > len(JOKES) / 2:
+        LAST_JOKES = []
+
+    LAST_JOKES.append(rnd)
+
+    text = '**' + JOKES[rnd][0] + '**' + '\n' + JOKES[rnd][1]
+    await ctx.send(text)
+
+LAST_NEWS = []
+@client.command(aliases=['news', 'stiri'])
+async def noutati(ctx):
+    global LAST_NEWS
+
+    rnd = random.randrange(0, len(NEWS) - 1, 1)
+
+    # Impiedica repetarea ultimelor noutati.
+    while rnd in LAST_NEWS:
+        rnd = random.randrange(0, len(NEWS), 1)
+
+    if len(LAST_NEWS) > len(NEWS) / 2:
+        LAST_NEWS = []
+
+    LAST_NEWS.append(rnd)
+
+    text = '**' + NEWS[rnd][0] + '**' + '\nLINK: ' + '<' + NEWS[rnd][1] + '>'
+    await ctx.send(text)
+
+
+
+@client.command()
+@commands.is_owner()
 async def stapan(ctx):
     await ctx.send('Tu ești stăpânul meu!')
 
@@ -306,7 +376,7 @@ async def stapan(ctx):
 
 
 
-# ------------- CONECTARE LA API -------------
+# ------------- CONNECTING TO THE API -------------
 
 client.run(BOT_TOKEN)
 
