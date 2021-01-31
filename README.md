@@ -5,7 +5,7 @@ Each command is prefixed with a dot.
 
 
      Commands for developer:
-.stapan - shows the text: „Tu ești stăpânul meu”. ("You are my master").
+     .stapan - shows the text: „Tu ești stăpânul meu”. ("You are my master").
 
     Technical/administrative commands (admins and group leaders):
 .ping - shows ping.
