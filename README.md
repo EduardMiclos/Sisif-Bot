@@ -4,7 +4,7 @@ Sisif-Bot is a Discord bot I made for my colleagues.
 Each command is prefixed with a dot.
 
 
-     Commands for developer:
+     *Commands for developer*:
 
      .stapan - shows the text: „Tu ești stăpânul meu”. ("You are my master").
 
