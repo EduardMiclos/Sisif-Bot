@@ -110,6 +110,14 @@ async def ping(ctx):
 
 @client.command()
 @commands.has_any_role(*SPECIAL_ROLES)
+async def calendar(ctx, *, txt):
+    if not write_date(txt):
+        await ctx.send('Stăpânul introdus o dată incorectă.')
+    else:
+        await ctx.send('Calendarul a fost actualizat.')
+        
+@client.command()
+@commands.has_any_role(*SPECIAL_ROLES)
 async def info(ctx, *, member: discord.Member):
     crated_at = member.joined_at.strftime("%d.%m.%Y")
     roles = len(member.roles) - 1
