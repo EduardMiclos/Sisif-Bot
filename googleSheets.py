@@ -65,7 +65,7 @@ COLORS = {
 # ----- SECONDARY FUNCTIONS -----
 
 def month_to_text(month):
-    months = ['ianuarie', 'februarie', 'martie', 'aprilie', 'mai', 'iunie', 'iulie', 'august', 'septembire', 'octombrie', 'noiembrie', 'decembire']
+    months = ['ianuarie', 'februarie', 'martie', 'aprilie', 'mai', 'iunie', 'iulie', 'august', 'septembrie', 'octombrie', 'noiembrie', 'decembrie']
     return months[month - 1]
 
 def format_date(day, month, hour):
