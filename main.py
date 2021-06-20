@@ -32,21 +32,21 @@ REPORTS_CHANNEL = ''
 # ------------- LINK-URI UTILE -------------
 
 class Links:
-    fb_link = '<https://www.facebook.com/groups/323385562186944/about>'
-    tutoriere = 'https://www.facebook.com/groups/2642602432721212'
-    calendar = '<https://docs.google.com/spreadsheets/d/1VSGPFnW5rbDz15P06TNTp5R1xyPwgjMEQQXHb3ihX8Y/edit#gid=0>'
+    fb_link = '###'
+    tutoriere = '###'
+    calendar = '###'
     drives = {}
     cursuri = {}
 
-Links.drives["info"] ='Drive-ul nostru: <https://drive.google.com/drive/folders/1MjE9FocU4ZZor5TITJD7grgZILZH_FN-?usp=sharing>'
-Links.drives["ipc"] = 'Drive IPC: <https://docs.google.com/spreadsheets/d/1ndI8qUHxgtKdZFs6CT2IRVecYZGuVMOLr5JUzYktVWc/edit#gid=0>'
-Links.drives["fc"] ='Drive FC: <https://drive.google.com/drive/folders/1p7wi23muoQevyHvvP7tg0FmC4G0bCI7d>'
+Links.drives["info"] ='###'
+Links.drives["ipc"] = '###'
+Links.drives["fc"] ='###'
 
-Links.cursuri["tp"] = '<https://upt-ro.zoom.us/j/98292222849?pwd=bk5MaXBLaWNUVlNLbE5VQUhIb3pSUT09>'
-Links.cursuri["microeconomie"] = '<https://cv.upt.ro/mod/zoom/view.php?id=197101>'
-Links.cursuri["ms"] = '<https://upt-ro.zoom.us/j/9753336570>'
+Links.cursuri["tp"] = '###'
+Links.cursuri["microeconomie"] = '###'
+Links.cursuri["ms"] = '###'
 
-LINK_ORAR = '<https://docs.google.com/spreadsheets/d/e/2PACX-1vTNnC1gP1EmJQkgc-aZdlRMYLPFIiPZypceOEU6voDxoe0p6hN_gnrJnb0qmsIMdDNwkzLjqrEVFKVw/pubhtml#>'
+LINK_ORAR = '###'
 
 # ------------------------------------------
 
