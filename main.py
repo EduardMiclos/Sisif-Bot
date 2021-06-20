@@ -9,40 +9,44 @@ from discord.ext import commands
 import codecs
 import random
 from reddit_extractor import MEMES, JOKES, NEWS
-
+from google_sheets import write_date
+from google_sheets import update_week
+from google_sheets import exams
 # -----------------------------------
 
 
 
 
 
-
-# ------------- HANDLING TOKEN-------------
+# ------------- SELECTARE PREFIX COMENZI SI TOKEN -------------
 
 client = commands.Bot(command_prefix='.')
-BOT_TOKEN = '##############'
-REPORTS_CHANNEL = ##############
-
+BOT_TOKEN = ''
+REPORTS_CHANNEL = ''
 # -------------------------------------------------------------
 
 
 
 
 
-
-# ------------- USEFUL LINKS -------------
+# ------------- LINK-URI UTILE -------------
 
 class Links:
-    fb_link = '##############'
+    fb_link = '<https://www.facebook.com/groups/323385562186944/about>'
+    tutoriere = 'https://www.facebook.com/groups/2642602432721212'
+    calendar = '<https://docs.google.com/spreadsheets/d/1VSGPFnW5rbDz15P06TNTp5R1xyPwgjMEQQXHb3ihX8Y/edit#gid=0>'
     drives = {}
     cursuri = {}
 
-Links.drives["info"] ='Drive-ul nostru: ##############'
-Links.drives["ipc"] = 'Drive IPC: ##############'
-Links.drives["fc"] ='Drive FC: ##############'
+Links.drives["info"] ='Drive-ul nostru: <https://drive.google.com/drive/folders/1MjE9FocU4ZZor5TITJD7grgZILZH_FN-?usp=sharing>'
+Links.drives["ipc"] = 'Drive IPC: <https://docs.google.com/spreadsheets/d/1ndI8qUHxgtKdZFs6CT2IRVecYZGuVMOLr5JUzYktVWc/edit#gid=0>'
+Links.drives["fc"] ='Drive FC: <https://drive.google.com/drive/folders/1p7wi23muoQevyHvvP7tg0FmC4G0bCI7d>'
 
-Links.cursuri["ipc"] = '##############'
-Links.cursuri["fc"] = '##############'
+Links.cursuri["tp"] = '<https://upt-ro.zoom.us/j/98292222849?pwd=bk5MaXBLaWNUVlNLbE5VQUhIb3pSUT09>'
+Links.cursuri["microeconomie"] = '<https://cv.upt.ro/mod/zoom/view.php?id=197101>'
+Links.cursuri["ms"] = '<https://upt-ro.zoom.us/j/9753336570>'
+
+LINK_ORAR = '<https://docs.google.com/spreadsheets/d/e/2PACX-1vTNnC1gP1EmJQkgc-aZdlRMYLPFIiPZypceOEU6voDxoe0p6hN_gnrJnb0qmsIMdDNwkzLjqrEVFKVw/pubhtml#>'
 
 # ------------------------------------------
 
@@ -50,8 +54,7 @@ Links.cursuri["fc"] = '##############'
 
 
 
-
-# ------------- WHO CAN USE THE BOT-------------
+# ------------- CINE POATE FOLOSI BOT-UL -------------
 
 ROLES = ['Andrei', 'Sefu La Grupa', 'Certified Meme Expert', 'Grupa 1', 'Grupa 2', 'Grupa 3', 'Duamna Profesoară', 'DJ', 'Vik']
 SPECIAL_ROLES = ['Andrei', 'Sefu La Grupa']
@@ -90,9 +93,11 @@ async def on_command_error(ctx, error):
     elif isinstance(error, commands.CommandNotFound):
         await ctx.send("Nu înțeleg, maestre.")
     elif isinstance(error, commands.MissingAnyRole):
-        await ctx.send("Îmi pare rău, nu ascult de tine.")
+            await ctx.send("Îmi pare rău, nu ascult de tine.")
     elif isinstance(error, commands.NotOwner):
         await ctx.send("Nu ești stăpânul meu, Micloș este.")
+    elif isinstance(error, commands.BotMissingRole):
+        await ctx.send("Îmi pare rău. Sunt în starea de debugging și nu răspund la comenzi.")
 
 # ------------------------------------------
 
@@ -100,23 +105,34 @@ async def on_command_error(ctx, error):
 
 
 
-
-# ------------- TECHNIC AND ADMINISTRATIVE -------------
+# ------------- TEHNICE ȘI ADMINISTRATIVE -------------
 
 @client.command()
+@commands.bot_has_role('Functional')
 @commands.has_any_role(*SPECIAL_ROLES)
 async def ping(ctx):
         await ctx.send(f'Ping = {round(client.latency * 1000)} ms')
 
 @client.command()
+@commands.bot_has_role('Functional')
 @commands.has_any_role(*SPECIAL_ROLES)
 async def calendar(ctx, *, txt):
     if not write_date(txt):
-        await ctx.send('Stăpânul introdus o dată incorectă.')
+        await ctx.send('Stăpânul a introdus o dată incorectă.')
     else:
         await ctx.send('Calendarul a fost actualizat.')
-        
+
 @client.command()
+@commands.bot_has_role('Functional')
+@commands.has_any_role(*SPECIAL_ROLES)
+async def updateweek(ctx):
+    if update_week():
+        await ctx.send('Saptămâna curentă a fost actualizată.')
+    else:
+        await ctx.send('Încă nu e timpul să actualizăm săptămâna.')
+
+@client.command()
+@commands.bot_has_role('Functional')
 @commands.has_any_role(*SPECIAL_ROLES)
 async def info(ctx, *, member: discord.Member):
     crated_at = member.joined_at.strftime("%d.%m.%Y")
@@ -132,38 +148,36 @@ async def info(ctx, *, member: discord.Member):
     await ctx.send(txt)
 
 @client.command()
+@commands.bot_has_role('Functional')
 @commands.has_any_role(*ROLES)
 async def report(ctx, reported_member: discord.Member, *, msg=''):
-    channel = client.get_channel(REPORTS_CHANNEL)
-    (reason, evidence) = msg.split('~')
-    text = 'Username: **' + str(reported_member) + '\n**Motiv: *' + reason + '*\nDovezi: *' + evidence + '*\n'
+    channel = client.get_channel(int(REPORTS_CHANNEL))
+    author = ctx.author
+    text = 'Autor: **' + str(author) + '**\n' + 'Membru raportat: **' + str(reported_member) + '\n**Motiv: *'
+    if '~' in msg:
+        (reason, evidence) = msg.split('~')
+        text += reason + '*\nDovada: *' + evidence + '*\n'
+    else:
+        reason = msg
+        text += reason + '*'
+
     await channel.send(text)
     await ctx.send(f'Membrul **{reported_member}** a fost raportat. Motiv: *{reason}*\nUn admin va analiza situația.')
 
+
 @client.command()
+@commands.bot_has_role('Functional')
 @commands.has_any_role(*SPECIAL_ROLES)
 async def kick(ctx, member: discord.Member, *, motiv=''):
     await member.kick(reason = motiv)
-    await ctx.send(f'La voia maestrului, {member} a primit kick.')
+    await ctx.send(f'La voia maestrului, **{member}** a primit kick.')
 
 @client.command()
+@commands.bot_has_role('Functional')
 @commands.has_any_role(*SPECIAL_ROLES)
 async def ban(ctx, member: discord.Member, *, motiv=''):
     await member.ban(reason = motiv)
-    await ctx.send(f'La voia maestrului, {member} a primit ban.')
-
-@client.command()
-@commands.has_any_role(*SPECIAL_ROLES)
-async def unban(ctx, *, member):
-    banned_users = await ctx.guild.bans()
-    member_name, member_disc = member.split('#')
-
-    for entry in banned_users:
-        user = entry.user
-
-        if (user.name, user.discriminator) == (member_name, member_disc):
-            await ctx.guild.unban(user)
-            await ctx.send(f'La voia maestrului, {user.name}#{user.discriminator} a primit unban. ')
+    await ctx.send(f'La voia maestrului, **{member}** a primit ban.')
 
 # -----------------------------------
 
@@ -172,24 +186,11 @@ async def unban(ctx, *, member):
 
 
 
-# ------------- FILES MANIPULATION -------------
+# ------------- MANIPULARE FISIERE -------------
 
-incoming_text = ''
-BANCURI = []
-
-with open('Teste.txt', 'r', encoding='utf-8') as file:
-    file.seek(0)
-    read = file.read(1)
-
-    if read:
-        incoming_text = read + file.read()
-    else:
-        incoming_text = 'Nu sunt examene, teste sau parțiale în următoarele săptămâni...'
-
-
-with codecs.open('Bancuri.txt', 'r', 'utf-8') as file:
-    BANCURI = file.read().split('---')
-    file.close()
+with codecs.open('Credentials.txt', 'r', 'utf-8') as f:
+    (BOT_TOKEN, REPORTS_CHANNEL) = f.readlines()
+    f.close()
 
 # ---------------------------------------------
 
@@ -198,7 +199,7 @@ with codecs.open('Bancuri.txt', 'r', 'utf-8') as file:
 
 
 
-# -------------SECONDARY FUNCTIONS -------------
+# ------------- FUNCTII AUXILIARE -------------
 
 def binary_search(name):
 
@@ -230,9 +231,11 @@ def binary_search(name):
 
 
 
-# ------------- USUAL RESPONSES FROM THE BOT -------------
+
+# ------------- RASPUNSURI UZUALE-------------
 
 @client.command(aliases=['fb'])
+@commands.bot_has_role('Functional')
 @commands.has_any_role(*ROLES)
 async def facebook(ctx):
     await ctx.send(f'Link-ul grupului de facebook este: {Links.fb_link}')
@@ -240,6 +243,7 @@ async def facebook(ctx):
 
 
 @client.command()
+@commands.bot_has_role('Functional')
 @commands.has_any_role(*ROLES)
 async def drives(ctx, drive):
     if drive.upper() == 'INFO' or drive.upper() == 'IPC' or drive.upper() == 'FC':
@@ -248,19 +252,34 @@ async def drives(ctx, drive):
 
 
 @client.command()
+@commands.bot_has_role('Functional')
 @commands.has_any_role(*ROLES)
 async def student(ctx, *, name):
     txt = binary_search(name.upper())
     await ctx.send(txt)
 
 
-@client.command(aliases=['teste', 'examene'])
+@client.command(aliases=['incoming'])
+@commands.bot_has_role('Functional')
 @commands.has_any_role(*ROLES)
-async def incoming(ctx):
-    await ctx.send(incoming_text)
-
+async def sesiune(ctx):
+    EXAMS = exams()
+    if EXAMS:
+        await ctx.send('Examenele programate săptămâna aceasta și săptămâna viitoare:')
+        for (date, info) in EXAMS:
+            await ctx.send(f'** {date} **')
+            await ctx.send(info)
+    else:
+        await ctx.send('Nu avem examene în săptămâna aceasta.')
 
 @client.command()
+@commands.bot_has_role('Functional')
+@commands.has_any_role(*ROLES)
+async def program(ctx):
+    await ctx.send(f'Puteți accesa programul aici: {Links.calendar}')
+
+@client.command()
+@commands.bot_has_role('Functional')
 @commands.has_any_role(*ROLES)
 async def lider(ctx, *, indice_grupa:int):
     if int(indice_grupa) == 1:
@@ -271,51 +290,42 @@ async def lider(ctx, *, indice_grupa:int):
         await ctx.send('Liderul grupei 3 este Preda Octavian.')
 
 @client.command()
+@commands.bot_has_role('Functional')
 @commands.has_any_role(*ROLES)
 async def sef(ctx):
     await ctx.send("Șeful de an este Balea Andrei-Petru. Dar stăpânul meu rămâne Micloș. ")
 
 
 @client.command()
+@commands.bot_has_role('Functional')
 @commands.has_any_role(*ROLES)
 async def link(ctx, *, materie):
-    if materie == 'ipc' or materie == 'fc':
+    if materie in Links.cursuri:
         await ctx.send(f'Link: {Links.cursuri[materie]}')
 
 @client.command()
+@commands.bot_has_role('Functional')
 @commands.has_any_role(*ROLES)
 async def tutoriere(ctx):
     await ctx.send(f'Link-ul grupului de tutoriere este: {Links.tutoriere}')
     await ctx.send('Detalii pe canalul `linkuri-utile` ')
 
+@client.command()
+@commands.bot_has_role('Functional')
+@commands.has_any_role(*ROLES)
+async def orar(ctx):
+    await ctx.send('Link orar: ' + LINK_ORAR);
 
 @client.command()
+@commands.bot_has_role('Functional')
 @commands.has_any_role(*ROLES)
 async def poke(user: discord.User, *, message=None):
     print(user)
     await user.send(message)
 
-
-LAST_RNDS = []
-@client.command(aliases=['antistres'])
-async def banc(ctx):
-    global LAST_RNDS
-
-    rnd = random.randrange(0, len(BANCURI) - 1, 1)
-
-    # Impiedica repetarea ultimelor bancuri.
-    while rnd in LAST_RNDS:
-        rnd = random.randrange(0, len(BANCURI), 1)
-
-    if len(LAST_RNDS) > len(BANCURI)/2:
-        LAST_RNDS = []
-
-    LAST_RNDS.append(rnd)
-    await ctx.send(BANCURI[rnd])
-
-
 LAST_MEMES = []
 @client.command()
+@commands.bot_has_role('Functional')
 async def meme(ctx):
     global LAST_MEMES
 
@@ -334,6 +344,7 @@ async def meme(ctx):
 
 LAST_JOKES = []
 @client.command()
+@commands.bot_has_role('Functional')
 async def joke(ctx):
     global LAST_JOKES
 
@@ -353,6 +364,7 @@ async def joke(ctx):
 
 LAST_NEWS = []
 @client.command(aliases=['news', 'stiri'])
+@commands.bot_has_role('Functional')
 async def noutati(ctx):
     global LAST_NEWS
 
@@ -371,8 +383,8 @@ async def noutati(ctx):
     await ctx.send(text)
 
 
-
 @client.command()
+@commands.bot_has_role('Functional')
 @commands.is_owner()
 async def stapan(ctx):
     await ctx.send('Tu ești stăpânul meu!')
@@ -383,9 +395,16 @@ async def stapan(ctx):
 
 
 
+# ------------- TESTING ----------------------
+# --------------------------------------------
 
-# ------------- CONNECTING TO THE API -------------
+
+
+
+
+# ------------- CONECTARE LA API -------------
 
 client.run(BOT_TOKEN)
 
 # --------------------------------------------
+
