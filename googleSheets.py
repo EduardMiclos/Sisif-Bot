@@ -14,7 +14,7 @@ from math import floor
 
 # ----- CONSTANTS AND PATHS -----
 
-SHEET_NAME = 'Calendar'
+SHEET_NAME = 'Calendar Examene INFO AC'
 JSON_PATH = 'credentials.json'
 FEEDS_PATH = "https://spreadsheets.google.com/feeds"
 SPREADSHEET_PATH = "https://www.googleapis.com/auth/spreadsheets"
@@ -34,9 +34,10 @@ SEMESTER_START_DATE = date(2021, 2, 15)
 scope = [FEEDS_PATH, SPREADSHEET_PATH, DRIVE_FILE_PATH, DRIVE_PATH]
 creds = ServiceAccountCredentials.from_json_keyfile_name(JSON_PATH, scope)
 client = gspread.authorize(creds)
-sheet = client.open(SHEET_NAME).sheet1
+sheets = [client.open(SHEET_NAME).get_worksheet(0), client.open(SHEET_NAME).get_worksheet(1)]
 
-data = sheet.get_all_values()
+teste = sheets[0]
+sesiune = sheets[1]
 
 # ----------------------
 
@@ -47,6 +48,8 @@ data = sheet.get_all_values()
 # ----- COLORS -----
 
 COLORS = {
+    'EVEN_WEEK': Color(1, 0.9, 0.6),
+    'ODD_WEEK': Color(0.96, 0.7, 0.42),
     'DATE_INFO': Color(1, 0.9, 0.6),
     'P3': Color(1, 0.95, 0.80),
     'P2': Color(0.92, 0.60, 0.60),
@@ -69,7 +72,10 @@ def month_to_text(month):
     return months[month - 1]
 
 def format_date(day, month, hour):
-    return str(day) + ' ' + month_to_text(month) + ', ' + str(hour)
+    date_txt = str(day) + ' ' + month_to_text(month)
+    if hour != '':
+        date_txt += ', ' + str(hour)
+    return date_txt
 
 def get_color(text):
     if 'P3' in text:
@@ -80,14 +86,12 @@ def get_color(text):
         return COLORS['P1']
     elif 'TEST' in text:
         return COLORS['TEST']
-    elif 'UPDATEWEEK' in text:
-        return COLORS['CURR_WEEK']
     elif 'DISTR' in text:
         return COLORS['CURR_WEEK']
     else:
         return Color(1, 1, 1)
 
-def correct_date(day, month, year, hour):
+def correct_date(day, month, year, hour='00:00'):
     errs = []
     h = int(hour.split(':')[0])
     m = int(hour.split(':')[1])
@@ -108,6 +112,12 @@ def correct_date(day, month, year, hour):
 
     return 1
 
+def get_school_day():
+    return date.today() - SEMESTER_START_DATE
+
+def get_week(dt):
+    return floor(dt.days / 7 + 1)
+
 # -------------------------------
 
 
@@ -127,8 +137,8 @@ def format_cell(row, col, text):
 
     col_char = chr(col + 64)
 
-    format_cell_range(sheet, f'{col_char}{row}:{col_char}{row}', fmt_date)
-    format_cell_range(sheet, f'{col_char}{row+1}:{col_char}{row+1}', fmt_info)
+    format_cell_range(teste, f'{col_char}{row}:{col_char}{row}', fmt_date)
+    format_cell_range(teste, f'{col_char}{row+1}:{col_char}{row+1}', fmt_info)
 
 def update_cell(week, day, date, text):
     row =2*(week + 1)
@@ -137,24 +147,68 @@ def update_cell(week, day, date, text):
     text = text.upper()
     format_cell(row, col, text)
 
-    sheet.update_cell(row, col, date)
-    sheet.update_cell(row + 1, col, text)
+    teste.update_cell(row, col, date)
+    teste.update_cell(row + 1, col, text)
+
+def format_week_cell(week):
+    row = 2*(week + 1)
+    col_char = 'B'
+
+    clr_val = list(COLORS.values())
+
+    fmt_prev_week = CellFormat(
+        backgroundColor=clr_val[(week-1)%2]
+    )
+
+    fmt_curr_week = CellFormat(
+        backgroundColor=COLORS['CURR_WEEK']
+    )
+
+    format_cell_range(teste, f'{col_char}{row- 2}:{col_char}{row}', fmt_prev_week)
+    format_cell_range(teste, f'{col_char}{row}:{col_char}{row + 1}', fmt_curr_week)
+
+def exams():
+    dt = get_school_day()
+    week = get_week(dt) - 15
+    row = 2*week + 1
+
+    EXAMS = []
+
+    for rw in range(row, row + 3, 2):
+        for col in range(3, 11):
+            date = sesiune.cell(rw, col).value
+            if date:
+                info = sesiune.cell(rw + 1, col).value
+                EXAMS.append((date, info))
+    return EXAMS
+
+def update_week():
+    dt = get_school_day()
+    if dt.days % 7 == 0:
+        week = get_week(dt)
+        format_week_cell(week)
+        return 1
+    return 0
 
 def write_date(inp):
     (date_in, text) = inp.split('. ')
     (day_in, month_in, year_in) = date_in.split('/')
-    (year_in, hour_in) = year_in.split(', ')
+
+    if ':' in date_in:
+        (year_in, hour_in) = year_in.split(', ')
+    else:
+        hour_in = ''
 
     day_in = int(day_in)
     month_in = int(month_in)
     year_in = int(year_in)
 
-    if not (correct_date(day_in, month_in, year_in, hour_in)):
+    if not (correct_date(day_in, month_in, year_in)):
         return 0
 
     dt = date(year_in, month_in, day_in)
     delta = dt - SEMESTER_START_DATE
-    week_out = floor(delta.days/7 + 1)
+    week_out = get_week(delta)
     day_out = dt.weekday() + 1
 
     update_cell(week_out, day_out, format_date(day_in, month_in, hour_in), text)
